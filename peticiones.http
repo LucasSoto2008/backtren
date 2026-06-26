@@ -1,0 +1,60 @@
+### Variables
+@baseUrl = http://localhost:3000
+@email = lucassotovargas@gmail.com
+@password = hola123
+
+### 1. Health Check
+GET {{baseUrl}}/health
+Accept: application/json
+
+### 2. Registrar un nuevo usuario (Crear Cuenta)
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "role": "student"
+}
+
+### 3. Iniciar sesión (Login)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Guardar Token de la respuesta
+@authToken = {{login.response.body.token}}
+@userId = {{login.response.body.user.id}}
+
+### 4. Obtener todos los usuarios (Ver usuarios)
+GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 5. Obtener un usuario por ID
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 6. Actualizar un usuario (Modificar)
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "updateduser@example.com",
+  "role": "teacher"
+}
+
+### 7. Eliminar un usuario (Soft Delete)
+DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+
