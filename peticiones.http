@@ -1,60 +1,166 @@
 ### Variables
 @baseUrl = http://localhost:3000
-@email = lucassotovargas@gmail.com
-@password = hola123
 
 ### 1. Health Check
 GET {{baseUrl}}/health
 Accept: application/json
 
-### 2. Registrar un nuevo usuario (Crear Cuenta)
-# @name register
-POST {{baseUrl}}/auth/register
+
+### =================================================================
+### PROFESORES ENDPOINTS (No tokens required)
+### =================================================================
+
+### 2. Crear un Profesor
+# @name createProfesor
+POST {{baseUrl}}/profesores
 Content-Type: application/json
 
 {
-  "email": "{{email}}",
-  "password": "{{password}}",
-  "role": "student"
+  "nombre": "Dr. Alan Turing",
+  "email": "alan.turing@school.edu",
+  "especialidad": "Computación y Lógica"
 }
 
-### 3. Iniciar sesión (Login)
-# @name login
-POST {{baseUrl}}/auth/login
+### Guardar ID del Profesor creado
+@profesorId = {{createProfesor.response.body.profesor.id}}
+
+### 3. Obtener todos los Profesores
+GET {{baseUrl}}/profesores
+Accept: application/json
+
+### 4. Obtener un Profesor por ID
+GET {{baseUrl}}/profesores/{{profesorId}}
+Accept: application/json
+
+### 5. Actualizar un Profesor
+PUT {{baseUrl}}/profesores/{{profesorId}}
 Content-Type: application/json
 
 {
-  "email": "{{email}}",
-  "password": "{{password}}"
+  "nombre": "Dr. Alan M. Turing",
+  "email": "alan.turing.updated@school.edu",
+  "especialidad": "Ciencia de la Computación"
 }
 
-### Guardar Token de la respuesta
-@authToken = {{login.response.body.token}}
-@userId = {{login.response.body.user.id}}
 
-### 4. Obtener todos los usuarios (Ver usuarios)
-GET {{baseUrl}}/users
-Authorization: Bearer {{authToken}}
-Accept: application/json
+### =================================================================
+### ALUMNOS ENDPOINTS (No tokens required)
+### =================================================================
 
-### 5. Obtener un usuario por ID
-GET {{baseUrl}}/users/{{userId}}
-Authorization: Bearer {{authToken}}
-Accept: application/json
-
-### 6. Actualizar un usuario (Modificar)
-PUT {{baseUrl}}/users/{{userId}}
-Authorization: Bearer {{authToken}}
+### 6. Crear un Alumno
+# @name createAlumno
+POST {{baseUrl}}/alumnos
 Content-Type: application/json
 
 {
-  "email": "updateduser@example.com",
-  "role": "teacher"
+  "nombre": "Lucas Soto",
+  "email": "lucassotovargas@gmail.com",
+  "edad": 19
 }
 
-### 7. Eliminar un usuario (Soft Delete)
-DELETE {{baseUrl}}/users/{{userId}}
-Authorization: Bearer {{authToken}}
+### Guardar ID del Alumno creado
+@alumnoId = {{createAlumno.response.body.alumno.id}}
+
+### 7. Obtener todos los Alumnos
+GET {{baseUrl}}/alumnos
+Accept: application/json
+
+### 8. Obtener un Alumno por ID
+GET {{baseUrl}}/alumnos/{{alumnoId}}
+Accept: application/json
+
+### 9. Actualizar un Alumno
+PUT {{baseUrl}}/alumnos/{{alumnoId}}
+Content-Type: application/json
+
+{
+  "nombre": "Ada King Lovelace",
+  "email": "ada.lovelace@school.edu",
+  "edad": 20
+}
+
+
+### =================================================================
+### MATERIAS ENDPOINTS (No tokens required)
+### =================================================================
+
+### 10. Crear una Materia (Asociada al Profesor creado)
+# @name createMateria
+POST {{baseUrl}}/materias
+Content-Type: application/json
+
+{
+  "nombre": "Algoritmos y Estructuras de Datos",
+  "profesor_id": "{{profesorId}}"
+}
+
+### Guardar ID de la Materia creada
+@materiaId = {{createMateria.response.body.materia.id}}
+
+### 11. Obtener todas las Materias
+GET {{baseUrl}}/materias
+Accept: application/json
+
+### 12. Obtener una Materia por ID
+GET {{baseUrl}}/materias/{{materiaId}}
+Accept: application/json
+
+### 13. Actualizar una Materia
+PUT {{baseUrl}}/materias/{{materiaId}}
+Content-Type: application/json
+
+{
+  "nombre": "Algoritmos Avanzados",
+  "profesor_id": "{{profesorId}}"
+}
+
+
+### =================================================================
+### INSCRIPCIONES ENDPOINTS (No tokens required)
+### =================================================================
+
+### 14. Inscribir Alumno en Materia
+# @name createInscripcion
+POST {{baseUrl}}/inscripciones
+Content-Type: application/json
+
+{
+  "alumno_id": "{{alumnoId}}",
+  "materia_id": "{{materiaId}}"
+}
+
+### Guardar ID de la Inscripción creada
+@inscripcionId = {{createInscripcion.response.body.inscripcion.id}}
+
+### 15. Obtener todas las Inscripciones
+GET {{baseUrl}}/inscripciones
+Accept: application/json
+
+### 16. Obtener Inscripciones de un Alumno
+GET {{baseUrl}}/inscripciones/alumno/{{alumnoId}}
+Accept: application/json
+
+### 17. Obtener Inscripciones de una Materia
+GET {{baseUrl}}/inscripciones/materia/{{materiaId}}
 Accept: application/json
 
 
+### =================================================================
+### CLEANUP (DELETE ENDPOINTS)
+### =================================================================
+
+### 18. Eliminar Inscripción por Relación Alumno-Materia
+DELETE {{baseUrl}}/inscripciones/alumno/{{alumnoId}}/materia/{{materiaId}}
+Accept: application/json
+
+### 19. Eliminar Materia
+DELETE {{baseUrl}}/materias/{{materiaId}}
+Accept: application/json
+
+### 20. Eliminar Profesor
+DELETE {{baseUrl}}/profesores/{{profesorId}}
+Accept: application/json
+
+### 21. Eliminar Alumno
+DELETE {{baseUrl}}/alumnos/{{alumnoId}}
+Accept: application/json

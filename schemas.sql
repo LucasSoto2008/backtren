@@ -1,55 +1,58 @@
--- ENUM para roles
-create type user_role as enum ('student', 'teacher');
-
--- USERS
-create table users (
-    id uuid primary key default gen_random_uuid(),
-    email text unique not null,
-    password text not null,
-    role user_role not null,
-    created_at timestamp default now(),
-    deleted_at timestamp
+-- PROFESORES (teachers)
+CREATE TABLE profesores (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    especialidad TEXT,
+    created_at TIMESTAMP DEFAULT now(),
+    deleted_at TIMESTAMP
 );
 
--- SUBJECTS (materias)
-create table subjects (
-    id uuid primary key default gen_random_uuid(),
-    name text not null,
-    teacher_id uuid not null,
-    created_at timestamp default now(),
-    deleted_at timestamp,
-
-    constraint fk_teacher
-        foreign key (teacher_id)
-        references users(id)
-        on delete restrict
+-- ALUMNOS (students)
+CREATE TABLE alumnos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    edad INTEGER,
+    created_at TIMESTAMP DEFAULT now(),
+    deleted_at TIMESTAMP
 );
 
--- ENROLLMENTS (relación alumno - materia)
-create table enrollments (
-    id uuid primary key default gen_random_uuid(),
-    student_id uuid not null,
-    subject_id uuid not null,
-    created_at timestamp default now(),
+-- MATERIAS (subjects)
+CREATE TABLE materias (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL,
+    profesor_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT now(),
+    deleted_at TIMESTAMP,
 
-    constraint fk_student
-        foreign key (student_id)
-        references users(id)
-        on delete cascade,
+    CONSTRAINT fk_profesor
+        FOREIGN KEY (profesor_id)
+        REFERENCES profesores(id)
+        ON DELETE RESTRICT
+);
 
-    constraint fk_subject
-        foreign key (subject_id)
-        references subjects(id)
-        on delete cascade,
+-- INSCRIPCIONES (enrollments: relación alumno - materia)
+CREATE TABLE inscripciones (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    alumno_id UUID NOT NULL,
+    materia_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT now(),
 
-    constraint unique_enrollment unique (student_id, subject_id)
+    CONSTRAINT fk_alumno
+        FOREIGN KEY (alumno_id)
+        REFERENCES alumnos(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_materia
+        FOREIGN KEY (materia_id)
+        REFERENCES materias(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_inscripcion UNIQUE (alumno_id, materia_id)
 );
 
 -- ÍNDICES (performance)
-create index idx_subjects_teacher on subjects(teacher_id);
-create index idx_enrollments_student on enrollments(student_id);
-create index idx_enrollments_subject on enrollments(subject_id);
-
--- FILTRO para soft delete (opcional pero recomendado)
--- Ejemplo: solo activos
--- select * from users where deleted_at is null;
+CREATE INDEX idx_materias_profesor ON materias(profesor_id);
+CREATE INDEX idx_inscripciones_alumno ON inscripciones(alumno_id);
+CREATE INDEX idx_inscripciones_materia ON inscripciones(materia_id);
