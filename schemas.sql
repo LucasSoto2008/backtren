@@ -1,3 +1,13 @@
+-- USUARIOS DEL SISTEMA (users)
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('admin', 'teacher', 'student')),
+    created_at TIMESTAMP DEFAULT now(),
+    deleted_at TIMESTAMP
+);
+
 -- PROFESORES (teachers)
 CREATE TABLE profesores (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,7 +62,9 @@ CREATE TABLE inscripciones (
     CONSTRAINT unique_inscripcion UNIQUE (alumno_id, materia_id)
 );
 
--- ÍNDICES (performance)
+-- ÍNDICES (performance & security)
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_materias_profesor ON materias(profesor_id);
 CREATE INDEX idx_inscripciones_alumno ON inscripciones(alumno_id);
 CREATE INDEX idx_inscripciones_materia ON inscripciones(materia_id);

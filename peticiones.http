@@ -1,19 +1,67 @@
 ### Variables
 @baseUrl = http://localhost:3000
 
-### 1. Health Check
+### 1. Health Check (Pública)
 GET {{baseUrl}}/health
 Accept: application/json
 
 
 ### =================================================================
-### PROFESORES ENDPOINTS (No tokens required)
+### AUTHENTICATION ENDPOINTS (Públicos)
 ### =================================================================
 
-### 2. Crear un Profesor
+### 2. Registrar nuevo Usuario
+# @name registerUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "profesor@school.edu",
+  "password": "Password123!",
+  "role": "teacher"
+}
+
+### 3. Iniciar Sesión (Obtener JWT Token)
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "profesor@school.edu",
+  "password": "Password123!"
+}
+
+### Guardar Token JWT obtenido del login
+@token = {{loginUser.response.body.token}}
+
+### 3b. Solicitar Recuperación de Contraseña
+# @name forgotPassword
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "profesor@school.edu"
+}
+
+### 3c. Restablecer Contraseña con Token
+# @name resetPassword
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "{{forgotPassword.response.body.resetToken}}",
+  "newPassword": "NewPassword123!"
+}
+
+### =================================================================
+### PROFESORES ENDPOINTS (Protegidos con JWT)
+### =================================================================
+
+### 4. Crear un Profesor
 # @name createProfesor
 POST {{baseUrl}}/profesores
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Dr. Alan Turing",
@@ -24,17 +72,20 @@ Content-Type: application/json
 ### Guardar ID del Profesor creado
 @profesorId = {{createProfesor.response.body.profesor.id}}
 
-### 3. Obtener todos los Profesores
+### 5. Obtener todos los Profesores
 GET {{baseUrl}}/profesores
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 4. Obtener un Profesor por ID
+### 6. Obtener un Profesor por ID
 GET {{baseUrl}}/profesores/{{profesorId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 5. Actualizar un Profesor
+### 7. Actualizar un Profesor
 PUT {{baseUrl}}/profesores/{{profesorId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Dr. Alan M. Turing",
@@ -44,13 +95,14 @@ Content-Type: application/json
 
 
 ### =================================================================
-### ALUMNOS ENDPOINTS (No tokens required)
+### ALUMNOS ENDPOINTS (Protegidos con JWT)
 ### =================================================================
 
-### 6. Crear un Alumno
+### 8. Crear un Alumno
 # @name createAlumno
 POST {{baseUrl}}/alumnos
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Lucas Soto",
@@ -61,17 +113,20 @@ Content-Type: application/json
 ### Guardar ID del Alumno creado
 @alumnoId = {{createAlumno.response.body.alumno.id}}
 
-### 7. Obtener todos los Alumnos
+### 9. Obtener todos los Alumnos
 GET {{baseUrl}}/alumnos
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 8. Obtener un Alumno por ID
+### 10. Obtener un Alumno por ID
 GET {{baseUrl}}/alumnos/{{alumnoId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 9. Actualizar un Alumno
+### 11. Actualizar un Alumno
 PUT {{baseUrl}}/alumnos/{{alumnoId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Ada King Lovelace",
@@ -81,13 +136,14 @@ Content-Type: application/json
 
 
 ### =================================================================
-### MATERIAS ENDPOINTS (No tokens required)
+### MATERIAS ENDPOINTS (Protegidos con JWT)
 ### =================================================================
 
-### 10. Crear una Materia (Asociada al Profesor creado)
+### 12. Crear una Materia (Asociada al Profesor creado)
 # @name createMateria
 POST {{baseUrl}}/materias
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Algoritmos y Estructuras de Datos",
@@ -97,17 +153,20 @@ Content-Type: application/json
 ### Guardar ID de la Materia creada
 @materiaId = {{createMateria.response.body.materia.id}}
 
-### 11. Obtener todas las Materias
+### 13. Obtener todas las Materias
 GET {{baseUrl}}/materias
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 12. Obtener una Materia por ID
+### 14. Obtener una Materia por ID
 GET {{baseUrl}}/materias/{{materiaId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 13. Actualizar una Materia
+### 15. Actualizar una Materia
 PUT {{baseUrl}}/materias/{{materiaId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Algoritmos Avanzados",
@@ -116,13 +175,14 @@ Content-Type: application/json
 
 
 ### =================================================================
-### INSCRIPCIONES ENDPOINTS (No tokens required)
+### INSCRIPCIONES ENDPOINTS (Protegidos con JWT)
 ### =================================================================
 
-### 14. Inscribir Alumno en Materia
+### 16. Inscribir Alumno en Materia
 # @name createInscripcion
 POST {{baseUrl}}/inscripciones
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "alumno_id": "{{alumnoId}}",
@@ -132,35 +192,42 @@ Content-Type: application/json
 ### Guardar ID de la Inscripción creada
 @inscripcionId = {{createInscripcion.response.body.inscripcion.id}}
 
-### 15. Obtener todas las Inscripciones
+### 17. Obtener todas las Inscripciones
 GET {{baseUrl}}/inscripciones
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 16. Obtener Inscripciones de un Alumno
+### 18. Obtener Inscripciones de un Alumno
 GET {{baseUrl}}/inscripciones/alumno/{{alumnoId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 17. Obtener Inscripciones de una Materia
+### 19. Obtener Inscripciones de una Materia
 GET {{baseUrl}}/inscripciones/materia/{{materiaId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
 
 ### =================================================================
-### CLEANUP (DELETE ENDPOINTS)
+### CLEANUP (DELETE ENDPOINTS - Protegidos con JWT)
 ### =================================================================
 
-### 18. Eliminar Inscripción por Relación Alumno-Materia
+### 20. Eliminar Inscripción por Relación Alumno-Materia
 DELETE {{baseUrl}}/inscripciones/alumno/{{alumnoId}}/materia/{{materiaId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 19. Eliminar Materia
+### 21. Eliminar Materia
 DELETE {{baseUrl}}/materias/{{materiaId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 20. Eliminar Profesor
+### 22. Eliminar Profesor
 DELETE {{baseUrl}}/profesores/{{profesorId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### 21. Eliminar Alumno
+### 23. Eliminar Alumno
 DELETE {{baseUrl}}/alumnos/{{alumnoId}}
 Accept: application/json
+Authorization: Bearer {{token}}

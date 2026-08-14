@@ -1,16 +1,15 @@
 import { getAllUsers, getUserById, updateUser, deleteUser, getUserByEmail } from "../services/user.service.js";
 
-export async function getUsers(req, res) {
+export async function getUsers(req, res, next) {
     try {
         const users = await getAllUsers();
         return res.status(200).json(users);
     } catch (error) {
-        console.error("Error al obtener usuarios:", error);
-        return res.status(500).json({ error: "Error interno del servidor." });
+        next(error);
     }
 }
 
-export async function getUser(req, res) {
+export async function getUser(req, res, next) {
     try {
         const { id } = req.params;
         const user = await getUserById(id);
@@ -19,12 +18,11 @@ export async function getUser(req, res) {
         }
         return res.status(200).json(user);
     } catch (error) {
-        console.error("Error al obtener usuario:", error);
-        return res.status(500).json({ error: "Error interno del servidor." });
+        next(error);
     }
 }
 
-export async function update(req, res) {
+export async function update(req, res, next) {
     try {
         const { id } = req.params;
         const { email, role, password } = req.body;
@@ -33,8 +31,9 @@ export async function update(req, res) {
             return res.status(400).json({ error: "Email y rol son requeridos para actualizar." });
         }
 
-        if (role !== "student" && role !== "teacher") {
-            return res.status(400).json({ error: "El rol debe ser 'student' o 'teacher'." });
+        const validRoles = ["admin", "teacher", "student"];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({ error: "El rol debe ser 'admin', 'teacher' o 'student'." });
         }
 
         const existingUser = await getUserById(id);
@@ -56,12 +55,11 @@ export async function update(req, res) {
             user: updatedUser
         });
     } catch (error) {
-        console.error("Error al actualizar usuario:", error);
-        return res.status(500).json({ error: "Error interno del servidor." });
+        next(error);
     }
 }
 
-export async function remove(req, res) {
+export async function remove(req, res, next) {
     try {
         const { id } = req.params;
         const existingUser = await getUserById(id);
@@ -75,7 +73,6 @@ export async function remove(req, res) {
             user: deletedUser
         });
     } catch (error) {
-        console.error("Error al eliminar usuario:", error);
-        return res.status(500).json({ error: "Error interno del servidor." });
+        next(error);
     }
 }
